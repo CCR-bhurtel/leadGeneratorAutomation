@@ -15,6 +15,8 @@ app.use(express.json()); // Parse JSON request bodies
 
 // Define the route for the webhook endpoint
 
+app.use(express.static(path.resolve(__dirname, 'public')));
+
 app.get('/', (req, res) => {
     res.send('<h1>Hello world in the name of law</h1>');
 });
