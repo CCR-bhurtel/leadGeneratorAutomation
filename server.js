@@ -15,13 +15,13 @@ app.use(express.json()); // Parse JSON request bodies
 
 // Define the route for the webhook endpoint
 
-app.use(express.static(path.resolve(__dirname, 'public')));
+// app.use(express.static(path.resolve(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.send('<h1>Hello world in the name of law</h1>');
 });
 app.get('/facebookwebhook', (req, res) => {
-    console.log(req);
+    res.status(400).json({ message: 'success' });
 });
 app.post('/facebookwebhook', facebookWebhookController);
 
