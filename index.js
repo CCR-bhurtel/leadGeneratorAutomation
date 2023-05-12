@@ -1,9 +1,11 @@
 const express = require('express');
 
 const dotenv = require('dotenv');
+const path = require('path');
 const facebookWebhookController = require('./hooks/facebookWebhook');
 const ninoxWebHookController = require('./hooks/ninoxWebhook');
 const postAdController = require('./controllers/postAdController');
+const { PORT } = require('./config/keys');
 
 dotenv.config({ path: path.resolve(__dirname, 'config.env') });
 
@@ -12,6 +14,13 @@ const app = express();
 app.use(express.json()); // Parse JSON request bodies
 
 // Define the route for the webhook endpoint
+
+app.get('/', (req, res) => {
+    res.send('<h1>Hello world in the name of law</h1>');
+});
+app.get('/facebookwebhook', (req, res) => {
+    console.log(req);
+});
 app.post('/facebookwebhook', facebookWebhookController);
 
 app.post('/ninoxwebhook', ninoxWebHookController);
@@ -19,7 +28,6 @@ app.post('/ninoxwebhook', ninoxWebHookController);
 app.post('/ad', postAdController);
 
 // Start the server
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Webhook server is listening on port ${PORT}`);
 });
