@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
     res.send('<h1>Hello world in the name of law</h1>');
 });
 app.get('/facebookwebhook', (req, res) => {
-    res.status(400).json({ message: 'success' });
+    res.status(200).json({ message: 'success' });
 });
 app.post('/facebookwebhook', facebookWebhookController);
 
