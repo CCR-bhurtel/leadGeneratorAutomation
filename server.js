@@ -1,27 +1,47 @@
 const express = require('express');
 
-const dotenv = require('dotenv');
-const path = require('path');
 const facebookWebhookController = require('./hooks/facebookWebhook');
 const ninoxWebHookController = require('./hooks/ninoxWebhook');
 const postAdController = require('./controllers/postAdController');
-const { PORT } = require('./config/keys');
+const { PORT, FACEBOOK_WEBHOOK_VERIFY_TOKEN } = require('./config/keys');
 
-dotenv.config({ path: path.resolve(__dirname, 'config.env') });
+const fs = require('fs');
+const path = require('path');
+const phpExpress = require('php-express')({
+    binPath: 'php', // Path to the PHP binary on your system
+});
 
 const app = express();
 
-app.use(express.json()); // Parse JSON request bodies
-
 // Define the route for the webhook endpoint
 
-// app.use(express.static(path.resolve(__dirname, 'public')));
+app.use(express.static(path.resolve(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-    res.send('<h1>Hello world in the name of law</h1>');
+    fs.createReadStream('./index.html').pipe(res);
 });
+
 app.get('/facebookwebhook', (req, res) => {
-    res.sendStatus(200);
+    console.log(req.query);
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+    console.log(FACEBOOK_WEBHOOK_VERIFY_TOKEN);
+    console.log(mode, token, challenge);
+
+    if (mode === 'subscribe' && token === FACEBOOK_WEBHOOK_VERIFY_TOKEN) {
+        console.log('Webhook verified');
+        res.status(200).send(challenge);
+    } else {
+        console.error('Verification failed. Invalid token.');
+        res.sendStatus(403);
+    }
+});
+app.get('/privacypolicy', (req, res) => {
+    return res.send('<h2>Privacy policy</h2>');
+});
+app.get('/tos', (req, res) => {
+    return res.send('<h2>Terms of service</h2>');
 });
 app.post('/facebookwebhook', facebookWebhookController);
 
