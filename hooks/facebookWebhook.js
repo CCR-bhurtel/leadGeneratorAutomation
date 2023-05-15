@@ -24,17 +24,20 @@ const facebookWebhookController = async (req, res) => {
         const changes = entry.changes[0];
         const value = changes.value;
 
-        axios
-            .get(`https://graph.facebook.com/v16.0/${value.leadgen_id}?access_token=${token}`)
-            .then((res) => {
-                console.log(res);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+        const response = await axios.get(`https://graph.facebook.com/v16.0/${value.leadgen_id}?access_token=${token}`);
+
+        const data = response.data;
+        console.log('Data came from server');
+        console.log(data);
 
         return res.sendStatus(200);
     } catch (err) {
+        if (err.response) {
+            console.log(err);
+        } else {
+            console.log(err);
+        }
+
         res.sendStatus(400);
     }
 
