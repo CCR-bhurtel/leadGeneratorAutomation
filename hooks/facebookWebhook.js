@@ -1,17 +1,42 @@
-const axios = require('axios');
-const { NINOX_API_KEY, NINOX_DATABASE_ID, NINOX_TABLE_ID } = require('../config/keys');
+const axios = require('axios').default;
+
+const bizSdk = require('facebook-nodejs-business-sdk');
+const Lead = bizSdk.Lead;
+
+const {
+    NINOX_API_KEY,
+    NINOX_DATABASE_ID,
+    NINOX_TABLE_ID,
+    FACEBOOK_USER_ACCESS_TOKEN,
+    FACEBOOK_APP_ID,
+    FACEBOOK_APP_SECRET,
+} = require('../config/keys');
 
 // gets webhook signal from facebook leads
-const facebookWebhookController = (req, res) => {
-    const payload = req.body;
+const facebookWebhookController = async (req, res) => {
+    try {
+        const payload = req.body;
 
-    console.log(payload);
-    console.log(payload.entry.changes);
-    console.log(payload.entry.changes[0]);
-    // Extract the lead information from the payload
-    const leadData = payload.entry[0].changes[0].value;
+        const token = FACEBOOK_USER_ACCESS_TOKEN;
 
-    return res.sendStatus(200);
+        const entry = payload.entry[0];
+
+        const changes = entry.changes[0];
+        const value = changes.value;
+
+        axios
+            .get(`https://graph.facebook.com/v16.0/${value.leadgen_id}?access_token=${token}`)
+            .then((res) => {
+                console.log(res);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+
+        return res.sendStatus(200);
+    } catch (err) {
+        res.sendStatus(400);
+    }
 
     // Store the lead information in Ninox
 

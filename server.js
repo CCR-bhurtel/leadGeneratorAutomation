@@ -16,18 +16,19 @@ const app = express();
 // Define the route for the webhook endpoint
 
 app.use(express.static(path.resolve(__dirname, 'public')));
-
+app.use(express.json());
 app.get('/', (req, res) => {
-    fs.createReadStream('./index.html').pipe(res);
+    fs.createReadStream('index.html').pipe(res);
+});
+
+app.post('/logData', (req, res) => {
+    console.log(req.body);
 });
 
 app.get('/facebookwebhook', (req, res) => {
-    console.log(req.query);
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
-    console.log(FACEBOOK_WEBHOOK_VERIFY_TOKEN);
-    console.log(mode, token, challenge);
 
     if (mode === 'subscribe' && token === FACEBOOK_WEBHOOK_VERIFY_TOKEN) {
         console.log('Webhook verified');
