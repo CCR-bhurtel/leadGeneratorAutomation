@@ -12,28 +12,107 @@ const {
     FACEBOOK_APP_SECRET,
 } = require('../config/keys');
 
+const token = FACEBOOK_USER_ACCESS_TOKEN;
+
+const getAdname = async (adId) => {
+    const response = await axios.get(`https://graph.facebook.com/v16.0/${adId}?fields=name&access_token=${token}`);
+
+    return response.data.name;
+};
+
+const getDate = () => {
+    // Create a new Date object
+    const date = new Date();
+
+    // Get the month, day, year, hours, and minutes from the date
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear().toString();
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+
+    // Determine whether it's AM or PM and convert the hours to 12-hour format
+    const amOrPm = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+
+    // Create the formatted date string
+    const formattedDate = `${month}/${day}/${year} ${hours12}:${minutes} ${amOrPm}`;
+
+    return formattedDate;
+};
+
+const getFilterFunction = (fieldData) => {
+    return (nameValue) => {
+        for (let i = 0; i < fieldData.length; i++) {
+            if (fieldData[i].name === nameValue) {
+                return fieldData[i].values[0];
+            } else {
+                return '';
+            }
+        }
+    };
+};
+
+const getLeadData = async (leadgenId, ad_id) => {
+    const response = await axios.get(`https://graph.facebook.com/v16.0/${leadgenId}?access_token=${token}`);
+
+    const data = response.data;
+
+    const getValuesFromNameKey = getFilterFunction(data.field_data);
+
+    //     Nome: 'first_name',
+    //     Conome: 'last_name',
+    //     Email: 'email',
+    //     Phone: 'phone_number',
+    // };
+
+    //     'Città di Partenza': 'partenza_da?',
+    //     'Tipi di camera': 'tipologia_della_camera',
+    //     'Periodo Soggiorno': 'periodo_del_soggiorno',
+    //     'Note Richiesta': 'indicaci_informazioni_del_soggiorno.',
+
+    let leadDataAngrafiche = {
+        Nome: getValuesFromNameKey('first_name'),
+        Conome: getValuesFromNameKey('last_name'),
+        Email: getValuesFromNameKey('email'),
+        Phone: getValuesFromNameKey('phone_number'),
+    };
+    let leadDataPR_FB = {
+        Modulo: await getAdname(ad_id),
+        'Data e Ora': getDate(),
+        'Città di Partenza': getValuesFromNameKey('partenza_da?'),
+        'Tipi di camera': getValuesFromNameKey('tipologia_della_camera'),
+        'Periodo Soggiorno': getValuesFromNameKey('periodo_del_soggiorno'),
+        'Note Richiesta': getValuesFromNameKey('indicaci_informazioni_del_soggiorno.'),
+    };
+
+    return {
+        leadDataAngrafiche,
+        leadDataPR_FB,
+    };
+};
+
 // gets webhook signal from facebook leads
 const facebookWebhookController = async (req, res) => {
     try {
         const payload = req.body;
-
-        const token = FACEBOOK_USER_ACCESS_TOKEN;
 
         const entry = payload.entry[0];
 
         const changes = entry.changes[0];
         const value = changes.value;
 
-        const response = await axios.get(`https://graph.facebook.com/v16.0/${value.leadgen_id}?access_token=${token}`);
+        const leadData = await getLeadData(value.leadgen_id, ad_id);
+        console.log(leadData);
 
-        const data = response.data;
-        console.log('Data came from server');
-        console.log(data);
+        await saveDataToNinox(leadData);
+
+        // const data = { ...leadData };
 
         return res.sendStatus(200);
     } catch (err) {
         if (err.response) {
-            console.log(err);
+            console.log(err.response);
         } else {
             console.log(err);
         }
