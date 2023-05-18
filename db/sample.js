@@ -3,7 +3,7 @@ const sampleData = {
         Nome: 'Test value for first name ',
         Cognome: 'Test value for last name',
         Email: 'test@test.com',
-        Phone: '+97710000000',
+        Phone: '+39338398089',
     },
     leadDataPR_FB: {
         Modulo: 'Test ad name',

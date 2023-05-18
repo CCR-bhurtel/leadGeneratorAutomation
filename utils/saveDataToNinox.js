@@ -39,11 +39,11 @@ const postAnagrafiche = async (data) => {
     return response.data[0].id;
 };
 
-const postPrFb = async (data, firstTableRecordId) => {
+const postPrFb = async (data, firstTableRecordId, leadDataAngrafiche) => {
     const response = await axios.post(
         `${baseNinoxTableURL}/${NINOX_SECOND_TABLE_ID}/records`,
         {
-            fields: { ...data, 'Richieste moduli': firstTableRecordId, ...sampleData.leadDataAngrafiche },
+            fields: { ...data, 'Richieste moduli': firstTableRecordId, ...leadDataAngrafiche },
         },
         {
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${NINOX_API_KEY}` },
@@ -82,6 +82,7 @@ const saveDataNinox = async ({ leadDataAngrafiche, leadDataPR_FB }) => {
     }
 };
 
-
-
+// saveDataNinox(sampleData).catch((err) => {
+//     console.log(err);
+// });
 module.exports = saveDataNinox;

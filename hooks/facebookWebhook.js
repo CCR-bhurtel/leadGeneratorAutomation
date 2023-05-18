@@ -11,13 +11,19 @@ const {
     FACEBOOK_APP_ID,
     FACEBOOK_APP_SECRET,
 } = require('../config/keys');
+const saveDataNinox = require('../utils/saveDataToNinox');
 
 const token = FACEBOOK_USER_ACCESS_TOKEN;
 
 const getAdname = async (adId) => {
-    const response = await axios.get(`https://graph.facebook.com/v16.0/${adId}?fields=name&access_token=${token}`);
+    try {
+        const response = await axios.get(`https://graph.facebook.com/v16.0/${adId}?fields=name&access_token=${token}`);
 
-    return response.data.name;
+        return response.data.name;
+    } catch (err) {
+        console.log(err.response);
+        return '';
+    }
 };
 
 const getDate = () => {
@@ -46,10 +52,9 @@ const getFilterFunction = (fieldData) => {
         for (let i = 0; i < fieldData.length; i++) {
             if (fieldData[i].name === nameValue) {
                 return fieldData[i].values[0];
-            } else {
-                return '';
             }
         }
+        return '';
     };
 };
 
@@ -57,6 +62,8 @@ const getLeadData = async (leadgenId, ad_id) => {
     const response = await axios.get(`https://graph.facebook.com/v16.0/${leadgenId}?access_token=${token}`);
 
     const data = response.data;
+
+    console.log(data.field_data);
 
     const getValuesFromNameKey = getFilterFunction(data.field_data);
 
@@ -101,11 +108,12 @@ const facebookWebhookController = async (req, res) => {
 
         const changes = entry.changes[0];
         const value = changes.value;
+        console.log(value);
 
-        const leadData = await getLeadData(value.leadgen_id, ad_id);
+        const leadData = await getLeadData(value.leadgen_id, value.ad_id);
         console.log(leadData);
 
-        await saveDataToNinox(leadData);
+        await saveDataNinox(leadData);
 
         // const data = { ...leadData };
 
