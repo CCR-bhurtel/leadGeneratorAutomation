@@ -24,6 +24,7 @@ const getRecordWithPhone = async (Phone) => {
         }
     );
     const record = response.data;
+    console.log('Record Exists: ', response.data);
     return record;
 };
 
@@ -36,6 +37,9 @@ const postAnagrafiche = async (data) => {
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${NINOX_API_KEY}` },
         }
     );
+
+    console.log('Record Posted: ', response.data);
+
     return response.data[0].id;
 };
 
@@ -77,8 +81,8 @@ const saveDataNinox = async ({ leadDataAngrafiche, leadDataPR_FB }) => {
             await postPrFb(leadDataPR_FB, first_id, leadDataAngrafiche);
         }
     } catch (err) {
-        console.log(err);
-        throw err;
+        // console.log(err);
+        // throw err;
     }
 };
 

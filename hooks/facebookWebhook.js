@@ -62,7 +62,6 @@ const getLeadData = async (leadgenId, ad_id) => {
     const response = await axios.get(`https://graph.facebook.com/v16.0/${leadgenId}?access_token=${token}`);
 
     const data = response.data;
-
     console.log(data.field_data);
 
     const getValuesFromNameKey = getFilterFunction(data.field_data);
@@ -104,6 +103,8 @@ const facebookWebhookController = async (req, res) => {
     try {
         const payload = req.body;
 
+        console.log(payload);
+
         const entry = payload.entry[0];
 
         const changes = entry.changes[0];
@@ -111,6 +112,7 @@ const facebookWebhookController = async (req, res) => {
         console.log(value);
 
         const leadData = await getLeadData(value.leadgen_id, value.ad_id);
+
         console.log(leadData);
 
         await saveDataNinox(leadData);
@@ -120,7 +122,7 @@ const facebookWebhookController = async (req, res) => {
         return res.sendStatus(200);
     } catch (err) {
         if (err.response) {
-            console.log(err.response);
+            console.log(err.response.data);
         } else {
             console.log(err);
         }
