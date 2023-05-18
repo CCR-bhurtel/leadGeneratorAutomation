@@ -79,7 +79,7 @@ const getLeadData = async (leadgenId, ad_id) => {
 
     let leadDataAngrafiche = {
         Nome: getValuesFromNameKey('first_name'),
-        Conome: getValuesFromNameKey('last_name'),
+        Cognome: getValuesFromNameKey('last_name'),
         Email: getValuesFromNameKey('email'),
         Phone: getValuesFromNameKey('phone_number'),
     };

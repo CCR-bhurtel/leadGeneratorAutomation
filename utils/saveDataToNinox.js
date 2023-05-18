@@ -32,7 +32,7 @@ const postAnagrafiche = async (data) => {
     const response = await axios.post(
         `${baseNinoxTableURL}/${NINOX_FIRST_TABLE_ID}/records`,
         {
-            fields: { ...data },
+            fields: JSON.stringify({ ...data }),
         },
         {
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${NINOX_API_KEY}` },
