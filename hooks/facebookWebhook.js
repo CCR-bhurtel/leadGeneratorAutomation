@@ -15,14 +15,16 @@ const saveDataNinox = require('../utils/saveDataToNinox');
 
 const token = FACEBOOK_USER_ACCESS_TOKEN;
 
-const getAdname = async (adId) => {
+const getFormName = async (form_id) => {
     try {
-        const response = await axios.get(`https://graph.facebook.com/v16.0/${adId}?fields=name&access_token=${token}`);
+        const response = await axios.get(
+            `https://graph.facebook.com/v16.0/${form_id}?fields=name&access_token=${token}`
+        );
 
         return response.data.name;
     } catch (err) {
         console.log(err.response);
-        return '';
+        return '-';
     }
 };
 
@@ -51,14 +53,14 @@ const getFilterFunction = (fieldData) => {
     return (nameValue) => {
         for (let i = 0; i < fieldData.length; i++) {
             if (fieldData[i].name === nameValue) {
-                return fieldData[i].values[0];
+                return fieldData[i].values[0].split('_').join(' ');
             }
         }
-        return '';
+        return '-';
     };
 };
 
-const getLeadData = async (leadgenId, ad_id) => {
+const getLeadData = async (leadgenId, form_id) => {
     const response = await axios.get(`https://graph.facebook.com/v16.0/${leadgenId}?access_token=${token}`);
 
     const data = response.data;
@@ -84,7 +86,7 @@ const getLeadData = async (leadgenId, ad_id) => {
         Phone: getValuesFromNameKey('phone_number'),
     };
     let leadDataPR_FB = {
-        Modulo: await getAdname(ad_id),
+        Modulo: await getFormName(form_id),
         'Data e Ora': getDate(),
         'Città di Partenza': getValuesFromNameKey('partenza_da?'),
         'Tipi di camera': getValuesFromNameKey('tipologia_della_camera'),
@@ -111,11 +113,11 @@ const facebookWebhookController = async (req, res) => {
         const value = changes.value;
         console.log(value);
 
-        const leadData = await getLeadData(value.leadgen_id, value.ad_id);
+        const leadData = await getLeadData(value.leadgen_id, value.form_id);
 
         console.log(leadData);
 
-        await saveDataNinox(leadData);
+        // await saveDataNinox(leadData); // ---------------------------this line----------------
 
         // const data = { ...leadData };
 

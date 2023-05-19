@@ -2,14 +2,15 @@ const express = require('express');
 
 const facebookWebhookController = require('./hooks/facebookWebhook');
 const ninoxWebHookController = require('./hooks/ninoxWebhook');
-const postAdController = require('./controllers/postAdController');
 const { PORT, FACEBOOK_WEBHOOK_VERIFY_TOKEN } = require('./config/keys');
 
 const fs = require('fs');
 const path = require('path');
-const phpExpress = require('php-express')({
-    binPath: 'php', // Path to the PHP binary on your system
-});
+const userRouter = require('./Routes/user');
+const formRouter = require('./Routes/form');
+const authProtect = require('./middleware/authProtect');
+const connectDB = require('./db/connect');
+const errorController = require('./controllers/errorController');
 
 const app = express();
 
@@ -17,6 +18,8 @@ const app = express();
 
 app.use(express.static(path.resolve(__dirname, 'public')));
 app.use(express.json());
+app.use('/api/user', userRouter);
+app.use('/api/form', authProtect, formRouter);
 app.get('/', (req, res) => {
     fs.createReadStream('index.html').pipe(res);
 });
@@ -48,9 +51,15 @@ app.post('/facebookwebhook', facebookWebhookController);
 
 app.post('/ninoxwebhook', ninoxWebHookController);
 
-app.post('/ad', postAdController);
-
+app.use(errorController);
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Webhook server is listening on port ${PORT}`);
-});
+connectDB()
+    .then((res) => {
+        console.log(res);
+        app.listen(PORT, () => {
+            console.log(`server is listening on port ${PORT}`);
+        });
+    })
+    .catch((err) => {
+        process.exit(1);
+    });
