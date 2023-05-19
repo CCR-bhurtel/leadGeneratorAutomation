@@ -1,8 +1,5 @@
 const axios = require('axios').default;
 
-const bizSdk = require('facebook-nodejs-business-sdk');
-const Lead = bizSdk.Lead;
-
 const {
     NINOX_API_KEY,
     NINOX_DATABASE_ID,
