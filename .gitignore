@@ -4,3 +4,5 @@ config.env
 .vercel
 test.js
 .vercelignore
+test-dep.js
+test1.js

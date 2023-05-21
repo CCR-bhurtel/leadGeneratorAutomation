@@ -9,7 +9,7 @@ const NINOX_FIRST_TABLE_ID = process.env.NINOX_FIRST_TABLE_ID;
 const NINOX_SECOND_TABLE_ID = process.env.NINOX_SECOND_TABLE_ID;
 
 const NINOX_TEAM_ID = process.env.NINOX_TEAM_ID;
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
 const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 const FACEBOOK_PAGE_ACCESS_TOKEN = process.env.FACEBOOK_APP_ACCESS_TOKEN;

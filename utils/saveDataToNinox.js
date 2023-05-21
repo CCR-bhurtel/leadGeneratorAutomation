@@ -44,11 +44,11 @@ const postAnagrafiche = async (data) => {
     return response.data.id;
 };
 
-const postPrFb = async (data, firstTableRecordId, leadDataAngrafiche) => {
+const postPrFb = async (data, firstTableRecordId) => {
     const response = await axios.post(
         `${baseNinoxTableURL}/${NINOX_SECOND_TABLE_ID}/records`,
         {
-            fields: { ...data, 'Richieste moduli': firstTableRecordId, ...leadDataAngrafiche },
+            fields: { ...data, 'Richieste moduli': firstTableRecordId },
         },
         {
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${NINOX_API_KEY}` },
@@ -68,18 +68,18 @@ const saveDataNinox = async ({ leadDataAngrafiche, leadDataPR_FB }) => {
                 // record not present
                 console.log('Record not found');
                 const first_id = await postAnagrafiche(leadDataAngrafiche);
-                await postPrFb(leadDataPR_FB, first_id, leadDataAngrafiche);
+                await postPrFb(leadDataPR_FB, first_id);
             } else if (returnedValue.id) {
                 // record is present
                 console.log('Record found');
-                await postPrFb(leadDataPR_FB, returnedValue.id, leadDataAngrafiche);
+                await postPrFb(leadDataPR_FB, returnedValue.id);
             } else if (Array.isArray(returnedValue) && returnedValue[0]) {
                 // maybe record is present in an array
-                await postPrFb(leadDataPR_FB, returnedValue[0].id, leadDataAngrafiche);
+                await postPrFb(leadDataPR_FB, returnedValue[0].id);
             }
         } else {
             const first_id = await postAnagrafiche(leadDataAngrafiche);
-            await postPrFb(leadDataPR_FB, first_id, leadDataAngrafiche);
+            await postPrFb(leadDataPR_FB, first_id);
         }
     } catch (err) {
         console.log(err);

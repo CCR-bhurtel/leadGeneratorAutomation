@@ -1,4 +1,5 @@
 const axios = require('axios').default;
+const Form = require('../models/Form');
 
 const {
     NINOX_API_KEY,
@@ -12,18 +13,6 @@ const saveDataNinox = require('../utils/saveDataToNinox');
 
 const token = FACEBOOK_USER_ACCESS_TOKEN;
 
-const getFormName = async (form_id) => {
-    try {
-        const response = await axios.get(
-            `https://graph.facebook.com/v16.0/${form_id}?fields=name&access_token=${token}`
-        );
-
-        return response.data.name;
-    } catch (err) {
-        console.log(err.response);
-        return '-';
-    }
-};
 
 const getDate = () => {
     // Create a new Date object
@@ -57,7 +46,7 @@ const getFilterFunction = (fieldData) => {
     };
 };
 
-const getLeadData = async (leadgenId, form_id) => {
+const getLeadData = async (leadgenId, fields, formName = '') => {
     const response = await axios.get(`https://graph.facebook.com/v16.0/${leadgenId}?access_token=${token}`);
 
     const data = response.data;
@@ -65,36 +54,38 @@ const getLeadData = async (leadgenId, form_id) => {
 
     const getValuesFromNameKey = getFilterFunction(data.field_data);
 
-    //     Nome: 'first_name',
-    //     Conome: 'last_name',
-    //     Email: 'email',
-    //     Phone: 'phone_number',
-    // };
-
-    //     'Città di Partenza': 'partenza_da?',
-    //     'Tipi di camera': 'tipologia_della_camera',
-    //     'Periodo Soggiorno': 'periodo_del_soggiorno',
-    //     'Note Richiesta': 'indicaci_informazioni_del_soggiorno.',
-
-    let leadDataAngrafiche = {
-        Nome: getValuesFromNameKey('first_name'),
-        Cognome: getValuesFromNameKey('last_name'),
-        Email: getValuesFromNameKey('email'),
-        Phone: getValuesFromNameKey('phone_number'),
-    };
+    let leadDataAngrafiche = {};
     let leadDataPR_FB = {
-        Modulo: await getFormName(form_id),
+        Modulo: formName,
         'Data e Ora': getDate(),
-        'Città di Partenza': getValuesFromNameKey('partenza_da?'),
-        'Tipi di camera': getValuesFromNameKey('tipologia_della_camera'),
-        'Periodo Soggiorno': getValuesFromNameKey('periodo_del_soggiorno'),
-        'Note Richiesta': getValuesFromNameKey('indicaci_informazioni_del_soggiorno.'),
     };
+
+    fields.anagrafiche.forEach((field) => {
+        leadDataAngrafiche[field.ninoxField] = getValuesFromNameKey(field.facebookField);
+    });
+    fields.prFb.forEach((field) => {
+        leadDataPR_FB[field.ninoxField] = getValuesFromNameKey(field.facebookField);
+    });
+
+    console.log({ leadDataAngrafiche, leadDataPR_FB });
 
     return {
         leadDataAngrafiche,
         leadDataPR_FB,
     };
+};
+
+const filterFields = (formFields) => {
+    const anagrafiche = [];
+    const prFb = [];
+    formFields.forEach((field) => {
+        if (field.tableType === 'basics') {
+            anagrafiche.push(field);
+        } else if (field.tableType === 'prFb') {
+            prFb.push(field);
+        }
+    });
+    return { anagrafiche, prFb };
 };
 
 // gets webhook signal from facebook leads
@@ -109,16 +100,19 @@ const facebookWebhookController = async (req, res) => {
         const changes = entry.changes[0];
         const value = changes.value;
         console.log(value);
+        const form = await Form.findOne({ formId: value.form_id });
 
-        const leadData = await getLeadData(value.leadgen_id, value.form_id);
+        if (form) {
+            const filteredFields = filterFields(form.formFields);
+            const leadData = await getLeadData(value.leadgen_id, filteredFields, form.formName);
 
-        console.log(leadData);
-
-        // await saveDataNinox(leadData); // ---------------------------this line----------------
+            await saveDataNinox(leadData); // ---------------------------this line----------------
+            return res.sendStatus(200);
+        } else {
+            return res.sendStatus(400);
+        }
 
         // const data = { ...leadData };
-
-        return res.sendStatus(200);
     } catch (err) {
         if (err.response) {
             console.log(err.response.data);

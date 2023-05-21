@@ -10,7 +10,7 @@ const handleDuplicateFieldDB = (err) => {
     const value = err.message.match(/(["'])(\\?.)*?\1/);
     console.log(err);
 
-    let message = `The email: ${value[0]} is taken, please use another value`;
+    let message = `The form id: ${value[0]} is taken, please use another value`;
     if (err.keyValue.medicoLegalSecrtaryPhone) message = 'The phone no. is taken, please use another';
     return new AppError(message, 400);
 };

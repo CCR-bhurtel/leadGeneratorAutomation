@@ -7,7 +7,7 @@ const formSchema = new mongoose.Schema({
         required: [true, 'Please enter form name'],
     },
 
-    formId: { type: String, required: [true, 'Please enter form id'] },
+    formId: { type: String, required: [true, 'Please enter form id'], unique: true },
 
     formFields: [
         {
@@ -18,6 +18,7 @@ const formSchema = new mongoose.Schema({
                     return value.split(' ').join('_');
                 },
             },
+            tableType: String,
         },
     ],
 });
